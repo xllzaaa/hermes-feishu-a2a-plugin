@@ -1,0 +1,26 @@
+{
+  "agents": [
+    {
+      "name": "1号Hermes",
+      "open_id": "ou_xxx_1",
+      "account_id": "hermes-1",
+      "description": "主控、需求理解、任务分派和结果汇总",
+      "aliases": ["1号", "主控Hermes"],
+      "self": true
+    },
+    {
+      "name": "2号Hermes",
+      "open_id": "ou_xxx_2",
+      "account_id": "hermes-2",
+      "description": "技术方案和代码实现",
+      "aliases": ["2号", "开发Hermes"]
+    },
+    {
+      "name": "3号Hermes",
+      "open_id": "ou_xxx_3",
+      "account_id": "hermes-3",
+      "description": "测试、验收和风险检查",
+      "aliases": ["3号", "测试Hermes"]
+    }
+  ]
+}

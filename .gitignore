@@ -1,0 +1,14 @@
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.env
+*.local.json
+agents.local.json
+accounts.local.json
+
+logs/
+dist/
+build/

@@ -1,0 +1,20 @@
+{
+  "hermes-1": {
+    "name": "1号Hermes",
+    "description": "主控、需求理解、任务分派和结果汇总",
+    "app_id": "cli_xxx_1",
+    "app_secret": "xxx"
+  },
+  "hermes-2": {
+    "name": "2号Hermes",
+    "description": "技术方案和代码实现",
+    "app_id": "cli_xxx_2",
+    "app_secret": "xxx"
+  },
+  "hermes-3": {
+    "name": "3号Hermes",
+    "description": "测试、验收和风险检查",
+    "app_id": "cli_xxx_3",
+    "app_secret": "xxx"
+  }
+}

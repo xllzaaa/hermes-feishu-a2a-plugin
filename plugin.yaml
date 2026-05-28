@@ -1,0 +1,10 @@
+name: hermes_feishu_a2a
+version: 0.3.0
+description: "Hermes plugin for Feishu/Lark bot-to-bot @ collaboration across multiple hosts."
+author: "Hermes Feishu A2A Contributors"
+provides_hooks:
+  - pre_llm_call
+  - post_llm_call
+requires_env:
+  - HERMES_FEISHU_A2A_REGISTRY_FILE
+  - HERMES_FEISHU_SELF_AGENT_NAME

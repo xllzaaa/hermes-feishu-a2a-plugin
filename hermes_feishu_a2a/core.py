@@ -437,6 +437,7 @@ class FeishuA2ACoordinator:
         *,
         sender_open_id: str,
         mentioned_ids: Iterable[str],
+        mentioned_names: Iterable[str] = (),
         chat_id: str = "",
         text: str = "",
     ) -> bool:
@@ -448,6 +449,12 @@ class FeishuA2ACoordinator:
         ids = set(mentioned_ids)
         mentioned = bool(self_agent and self_agent.open_id in ids)
         mentioned = mentioned or bool(self_agent and f'<at user_id="{self_agent.open_id}">' in (text or ""))
+        if self_agent and not mentioned:
+            own_names = {self.registry.normalize_name(name) for name in self_agent.display_names}
+            seen_names = {self.registry.normalize_name(name) for name in mentioned_names}
+            seen_names.update(match.group("name") for match in MENTION_TAG_RE.finditer(text or ""))
+            seen_names = {self.registry.normalize_name(name) for name in seen_names}
+            mentioned = bool(own_names.intersection(seen_names))
         if mentioned and chat_id:
             self.native_a2a_chats.add(chat_id)
         return mentioned

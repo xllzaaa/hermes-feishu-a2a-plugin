@@ -48,6 +48,12 @@ def test_known_bot_is_accepted_only_when_it_mentions_self():
     coordinator = FeishuA2ACoordinator(registry())
 
     assert coordinator.should_accept_bot_sender(sender_open_id="ou_two", mentioned_ids={"ou_one"}, chat_id="oc_demo")
+    assert coordinator.should_accept_bot_sender(
+        sender_open_id="ou_two",
+        mentioned_ids={"ou_sender_scoped_id"},
+        mentioned_names={"1号"},
+        chat_id="oc_demo",
+    )
     assert "oc_demo" in coordinator.native_a2a_chats
     assert not coordinator.should_accept_bot_sender(sender_open_id="ou_two", mentioned_ids={"ou_three"}, chat_id="oc_demo")
     assert not coordinator.should_accept_bot_sender(sender_open_id="ou_unknown", mentioned_ids={"ou_one"}, chat_id="oc_demo")

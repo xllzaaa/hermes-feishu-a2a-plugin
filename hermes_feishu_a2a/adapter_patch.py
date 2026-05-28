@@ -127,23 +127,39 @@ def install_feishu_adapter_patch(coordinator: FeishuA2ACoordinator) -> bool:
             chat_id = getattr(message, "chat_id", "") or "" if message else ""
             raw_content = getattr(message, "content", "") or "" if message else ""
             mentioned_ids = set()
+            mentioned_names = set()
             for mention in getattr(message, "mentions", None) or []:
                 mention_id = getattr(mention, "id", None)
                 if getattr(mention_id, "open_id", None):
                     mentioned_ids.add(getattr(mention_id, "open_id"))
                 if getattr(mention_id, "user_id", None):
                     mentioned_ids.add(getattr(mention_id, "user_id"))
+                for name_attr in ("name", "key", "user_name"):
+                    value = getattr(mention, name_attr, None)
+                    if isinstance(value, str) and value.strip():
+                        mentioned_names.add(value.strip())
             mentioned_ids.update(extract_mentions_from_content(raw_content))
+            mentioned_names.update(match.group("name") for match in _AT_TAG_PATTERN.finditer(raw_content))
 
             if chat_type != "p2p" and not coordinator.should_accept_bot_sender(
                 sender_open_id=sender_open_id,
                 mentioned_ids=mentioned_ids,
+                mentioned_names=mentioned_names,
                 chat_id=chat_id,
                 text=raw_content,
             ):
+                _debug_print(
+                    "drop bot message without self mention "
+                    f"sender={sender_open_id} chat={chat_id} ids={sorted(mentioned_ids)} names={sorted(mentioned_names)}"
+                )
                 logger.debug("[hermes-feishu-a2a] Dropping bot message without self mention: %s", sender_open_id)
                 return
 
+            if sender_type == "bot":
+                _debug_print(
+                    "accept bot message "
+                    f"sender={sender_open_id} chat={chat_id} ids={sorted(mentioned_ids)} names={sorted(mentioned_names)}"
+                )
             _inject_sender_info_into_text_message(coordinator, message, sender_open_id, chat_id)
 
             old_sender_type = getattr(sender, "sender_type", None)

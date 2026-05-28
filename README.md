@@ -20,9 +20,16 @@
 ```text
 plugins/hermes_feishu_a2a
 hooks/hermes_feishu_a2a_gateway_patch
+skills/a2a-*
 ```
 
-它不会修改 `config.yaml`，不会写入飞书密钥，也不会改模型、prompt 或现有 Hermes 配置。卸载时删除这两个目录/链接即可。
+它不会修改 `config.yaml`，不会写入飞书密钥，也不会改模型、prompt 或现有 Hermes 配置。卸载时删除这些目录/链接即可。
+
+如果不想安装随插件附带的 A2A 协作 skills：
+
+```bash
+INSTALL_SKILLS=false ./install.sh
+```
 
 ## 最快安装
 
@@ -155,6 +162,15 @@ streaming:
 ./hermes-feishu-a2a doctor
 ```
 
+检查指定 Hermes profile，并用飞书 API 校验当前 bot 的真实 `open_id`：
+
+```bash
+./hermes-feishu-a2a doctor --profile product
+./hermes-feishu-a2a doctor --profiles product developer tester reviewer
+```
+
+`doctor` 不会输出飞书密钥。它会对比 registry 里的 `open_id` 和飞书 `bot/v3/info` 返回的 `open_id`，用于排查“@ 变蓝但对方没收到”这类问题。
+
 ## 多主机部署
 
 多台主机部署时，每台机器都 clone 同一份代码并执行 `./install.sh`。所有机器可以使用同一份 registry 内容，但每台机器的当前身份必须不同。
@@ -219,6 +235,8 @@ $HERMES_HOME/feishu-a2a/registry.json
 ```bash
 ./install.sh --help
 ./hermes-feishu-a2a doctor
+./hermes-feishu-a2a doctor --profile product
+./hermes-feishu-a2a doctor --profiles product developer tester reviewer
 ./hermes-feishu-a2a discover
 uv run --python 3.11 --with pytest python -m pytest
 ```
@@ -229,6 +247,20 @@ uv run --python 3.11 --with pytest python -m pytest
 uv tool install .
 hermes-feishu-a2a doctor
 ```
+
+## Bundled skills
+
+插件内置了几个 Hermes skills，安装脚本会默认链接到目标 profile 的 `skills/` 目录：
+
+- `a2a-collaboration-guide`：群内协作总规则，默认常驻。
+- `a2a-task-decompose`：复杂任务拆解和分配。
+- `a2a-result-merge`：多 Agent 回传结果汇总。
+- `a2a-status-check`：协作进度和阻塞检查。
+- `a2a-interrupt`：停止、取消、改方向。
+- `a2a-mode-switch`：独立模式、指定协作、全员协作。
+- `a2a-identity-diagnostics`：`open_id` / `ouid` 和 mention 故障诊断。
+
+其中只有总规则保持常驻，其余按场景触发，避免普通回复被太多协作提示词干扰。
 
 ## 配置项
 
@@ -262,6 +294,14 @@ hermes-feishu-a2a doctor
 目标 bot 不回复：
 
 确认目标飞书应用开启 `im:message.group_at_msg.include_bot:readonly`，目标 gateway 正在运行，且 Hermes 已关闭流式输出。
+
+如果 `@` 已经变蓝但目标 bot 仍不回复，先运行：
+
+```bash
+./hermes-feishu-a2a doctor --profiles product developer tester reviewer
+```
+
+确认每个 profile 的 `feishu_identity.match` 都是 `true`。不要把机器人在群里自报的 `ouid` 当成配置依据，LLM 可能会根据上下文猜错；以飞书 API 和 registry 文件为准。
 
 消息偶尔截断：
 

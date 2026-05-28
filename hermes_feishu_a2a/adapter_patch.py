@@ -99,6 +99,13 @@ def install_feishu_adapter_patch(coordinator: FeishuA2ACoordinator) -> bool:
             msg_type=msg_type,
             payload=payload,
         )
+        if _payload_has_a2a_mention(new_payload):
+            # Feishu can render mentions inside reply messages without delivering
+            # bot-to-bot mention events to the target bot. Send A2A handoffs as a
+            # normal group message so the target gateway receives a native event.
+            if reply_to:
+                _debug_print("sending A2A mention as root group message instead of reply")
+            reply_to = None
         return await original_feishu_send_with_retry(
             self,
             chat_id=chat_id,
@@ -318,6 +325,16 @@ def _extract_post_text(payload: str) -> str:
     chunks: list[str] = []
     _collect_post_text(body, chunks)
     return "\n".join(chunk for chunk in chunks if chunk).strip()
+
+
+def _payload_has_a2a_mention(payload: str) -> bool:
+    if '<at user_id="' in (payload or ""):
+        return True
+    try:
+        body = json.loads(payload or "{}")
+    except json.JSONDecodeError:
+        return False
+    return '<at user_id="' in json.dumps(body, ensure_ascii=False)
 
 
 def _collect_post_text(value: Any, chunks: list[str]) -> None:
